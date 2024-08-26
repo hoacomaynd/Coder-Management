@@ -48,36 +48,27 @@ userController.getUserByName = async (req, res, next) => {
 userController.getTasks = async (req, res, next) => {
     const { id } = req.params;
     try {
-        const result = validationResult(req);
-        if (result.isEmpty()) {
-            if (ObjectId.isValid(id)) {
-                if (String(new ObjectId(id)) === id) {
-                    const user = await User.findOne({ _id: id }).populate({
-                        path: "task_id",
-                        match: {
-                            isDeleted: false,
-                        },
-                    });
-                    sendResponse(
-                        res,
-                        200,
-                        true,
-                        user,
-                        null,
-                        "Get user tasks successfully"
-                    );
-                } else {
-                    throw new AppError(400, "Invalid Id", "Get Task Error");
-                }
-            } else {
-                throw new AppError(400, "Invalid Id", "Get Task Error");
-            }
-        } else {
-            const errors = result.array();
-            const errorMsgs = errors.map((item) => item.msg);
-            const errorMsgsText = errorMsgs.join(",");
-            throw new AppError(400, `${errorMsgsText}`, "Get Task Error");
+        if (!ObjectId.isValid(id)) {
+            throw new AppError(400, "Invalid User ID", "Get Task Error");
         }
+
+        const user = await User.findById(id).populate({
+            path: "tasks",
+            match: { isDeleted: false },
+        });
+
+        if (!user) {
+            throw new AppError(404, "User not found", "Get Task Error");
+        }
+
+        sendResponse(
+            res,
+            200,
+            true,
+            user.tasks,
+            null,
+            "Get user tasks successfully"
+        );
     } catch (error) {
         next(error);
     }
@@ -87,29 +78,29 @@ userController.createUser = async (req, res, next) => {
     const { name, role } = req.body;
 
     try {
-        const result = validationResult(req);
-        if (result.isEmpty()) {
-            const userCreate = await User.create({
-                name: name,
-                role: role,
-            });
-            sendResponse(
-                res,
-                200,
-                true,
-                userCreate,
-                null,
-                "Create user successfully"
-            );
-        } else {
-            const errors = result.array();
-            const errorMsgs = errors.map((item) => item.msg);
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const errorMsgs = errors.array().map((item) => item.msg);
             const errorMsgsText = errorMsgs.join(",");
-            throw new AppError(400, `${errorMsgsText}`, "Create User Error");
+            return next(new AppError(400, errorMsgsText, "Create User Error"));
         }
+
+        const existingUser = await User.findOne({ name: name });
+        if (existingUser) {
+            return next(new AppError(400, "User name already exists", "Create User Error"));
+        }
+
+        const userCreate = await User.create({
+            name: name,
+            role: role,
+        });
+
+        return sendResponse(res, 200, true, userCreate, null, "Create user successfully");
+
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
+
 
 module.exports = userController;
