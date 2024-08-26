@@ -18,8 +18,10 @@ taskController.getTask = async (req, res, next) => {
           throw new AppError(400, "Queries not allowed", "Get Task Error");
         }
       });
+      
       const { name, status, createdAt, updatedAt } = req.query;
       const query = Task.find({ isDeleted: false });
+
       if (name) {
         query.where("name").equals(name);
       }
@@ -32,14 +34,15 @@ taskController.getTask = async (req, res, next) => {
       if (updatedAt) {
         query.sort({ updatedAt: parseInt(updatedAt) });
       }
-      query.populate("assignee");
 
+      query.populate("assignee");
       tasks = await query.exec();
     } else {
-      tasks = await Task.find()
+      tasks = await Task.find({ isDeleted: false })
         .populate("assignee")
-        .sort("-createdAt, -updateAt");
+        .sort("-createdAt -updatedAt"); // Sort by createdAt and updatedAt
     }
+
     sendResponse(res, 200, true, tasks, null, "Get Task Successfully");
   } catch (error) {
     next(error);

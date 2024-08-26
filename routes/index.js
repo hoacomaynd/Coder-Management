@@ -8,5 +8,5 @@ router.get('/', function(req, res, next) {
 const userRouter = require("./user.api");
 const taskRouter = require("./task.api");
 router.use("/users", userRouter);
-router.use("/task", taskRouter);
+router.use("/tasks", taskRouter);
 module.exports = router;
