@@ -13,7 +13,7 @@ const {
 } = require("../controllers/task.controllers");
 
 /**
- * @route GET api/task
+ * @route GET api/tasks
  * @description Get list of tasks
  * @allowQueries: name, status
  */
@@ -21,7 +21,7 @@ const {
 router.get("/", getTask);
 
 /**
- * @route POST api/task
+ * @route POST api/tasks
  * @description Create task
  * @requiredBody: name, description
  */
@@ -36,28 +36,28 @@ const validateCreateTask = () => {
 router.post("/", validateCreateTask(), createTask);
 
 /**
- * @route GET api/task/:id
+ * @route GET api/tasks/:id
  * @description Get task by Id
  */
 
 router.get("/:id", getTaskById);
 
 /**
- * @route PUT api/task/assign/:id
+ * @route PUT api/tasks/assign/:id
  * @description Assign a task to a user
  */
 
 router.put("/assign/:idUser/:idTask", assignTask);
 
 /**
- * @route PUT api/task/unassign/:id
+ * @route PUT api/tasks/unassign/:id
  * @description Unassign a task
  */
 
 router.put("/unassign/:idUser/:idTask", unassignTask);
 
 /**
- * @route PUT api/task/update/:id
+ * @route PUT api/tasks/update/:id
  * @description Update task status by id
  * @requiredBody: status
  */
@@ -69,10 +69,10 @@ const validateStatus = () => {
 router.put("/update/:id", validateStatus(), updateTask);
 
 /**
- * route PUT api/task/delete/:id
+ * route PUT api/tasks/delete/:id
  * @description Delete task by id
  */
 
-router.put("/delete/:id", deleteTask);
+router.delete("/:id", deleteTask);
 
 module.exports = router;
